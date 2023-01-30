@@ -13,7 +13,7 @@ namespace TESTWebApi.Models
 		public int State { get; set; }
 		[Required]
         public string NameChannel { get; set; }
-		[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
+		[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy}")]
 		public DateOnly DateSubscribe { get; set; }
 		[Required]
 		public string Link { get; set; }

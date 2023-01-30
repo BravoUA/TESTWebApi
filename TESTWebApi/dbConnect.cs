@@ -17,14 +17,9 @@ namespace TESTWebApi
 		}
 		public dbConnect(DbContextOptions<dbConnect> options) : base(options)
 		{
-			Database.EnsureCreated();
+			 Database.EnsureCreated();
 		}
-		/*protected override void OnConfiguring(DbContextOptionsBuilder options)
-		{
-			// connect to sqlite database
-			options.UseSqlite("Filename=MyDb.db");
-		}
-		*/
+
 
 
 

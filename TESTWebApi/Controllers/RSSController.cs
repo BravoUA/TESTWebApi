@@ -13,7 +13,7 @@ namespace TESTWebApi.Controllers
 	{
 
 
-		private readonly dbConnect dbConnect;
+		public  dbConnect dbConnect;
 		private readonly dbConUsers dbConUsers;
 		public List<RSSChannel> rssChannels = new List<RSSChannel>();
 		public List<UsersSubscribes> usersSubscribes = new List<UsersSubscribes>();
@@ -54,13 +54,6 @@ namespace TESTWebApi.Controllers
 			return Ok(Pars.GetAllUnreadNewsByDate(dateTime, users.Id));
 		}
 
-		[HttpPut("UpdateNews")]
-		public IActionResult PUT()
-		{
-			Pars = new ParsPage();
-			Pars.parsUpdate();
-			return Ok();
-		}
 
 		[HttpPut("SetNewsAsRead")]
 		public IActionResult PUT(int ID)

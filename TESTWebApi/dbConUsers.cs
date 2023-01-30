@@ -19,15 +19,6 @@ namespace TESTWebApi
 		{
 			
 		}
-
-
-
-
-
-
-
-
-
 	}
 
 }

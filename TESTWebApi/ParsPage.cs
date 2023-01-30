@@ -8,15 +8,15 @@ using System;
 
 namespace TESTWebApi
 {
-	public class ParsPage
+	public class ParsPage : IParsPage
 	{
-		
+
 		/*string itemsRegex = @"<item>(.*)</item>";
 		string titelRegex = @"<title>(.*)</title>";
 		string LinkRegex = @"<link>(.*)</link>";
 		string DescriptionRegex = @"<description>(.*)</description>";
 		string PublDateRegex = @"<pubDate>(.*)</pubDate>";*/
-		
+
 		List<ChannelNews> channelNews = new List<ChannelNews>();
 		ChannelNews channelNews2;
 		RSSChannel rssChannel;
@@ -24,90 +24,99 @@ namespace TESTWebApi
 		UsersSubscribes usersSubscribes;
 		List<UsersSubscribes> UsersSubscribes;
 
-		
+
 		private readonly dbConnect dbConnect;
-		
+
 
 		public ParsPage() { }
-		public ParsPage(dbConnect dbConnect1) {
+		public ParsPage(dbConnect dbConnect1)
+		{
 			dbConnect = dbConnect1;
 		}
-		/// <summary>
-		/// Add RSS feed (parameters: feed url)
-		/// </summary>
-		/// <param name="URL">URL address rss channel</param>
-		/// <param name="UsersID">Users ID</param>
-		public void parsPage(string URL, int UsersID) {
 
-				Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-				XmlDocument xDoc = new XmlDocument();
-				xDoc.Load(URL);
 
-				XmlNodeList xmlNodeList = xDoc.SelectNodes("//channel");
-				foreach (XmlNode node in xmlNodeList)
+		public void parsPage(string URL, int UsersID)
+		{
+
+			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+			XmlDocument xDoc = new XmlDocument();
+			xDoc.Load(URL);
+
+			XmlNodeList xmlNodeList = xDoc.SelectNodes("//channel");
+			foreach (XmlNode node in xmlNodeList)
+			{
+
+				usersSubscribes = new UsersSubscribes();
+				rssChannel = new RSSChannel();
+				XmlNode xmlNode = node.SelectSingleNode("title");
+				rssChannel.NameChannel = xmlNode.InnerText;
+
+				XmlNode xmlNode2 = node.SelectSingleNode("link");
+				rssChannel.Link = xmlNode2.InnerText;
+
+				DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+				rssChannel.DateSubscribe = today;
+				rssChannel.LinkforUpdate = URL;
+				rssChannel.State = 0;
+
+
+				usersSubscribes.UsersID = UsersID;
+
+			}
+			try
+			{
+				dbConnect.RSSChannel.Add(rssChannel);
+				dbConnect.SaveChanges();
+
+
+				usersSubscribes.RSSChannelID = rssChannel.id;
+				dbConnect.UsersSubscribes.Add(usersSubscribes);
+				dbConnect.SaveChanges();
+			}
+			catch (Exception e)
+			{
+
+				Console.WriteLine(e.ToString());
+			}
+			xmlNodeList = xDoc.SelectNodes("//channel/item");
+			foreach (XmlNode node in xmlNodeList)
+			{
+				channelNews2 = new ChannelNews();
+				XmlNode xmlNode = node.SelectSingleNode("title");
+				channelNews2.Title = xmlNode.InnerText;
+
+				XmlNode xmlNode2 = node.SelectSingleNode("link");
+				channelNews2.Link = xmlNode2.InnerText;
+
+				XmlNode xmlNode3 = node.SelectSingleNode("description");
+				channelNews2.Description = xmlNode3.InnerText;
+
+				XmlNode xmlNode4 = node.SelectSingleNode("pubDate");
+				channelNews2.PublDate = xmlNode4.InnerText;
+
+				channelNews2.StatusView = 0;
+				DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+				channelNews2.DateAdd = today;
+				channelNews2.RSSChannelID = rssChannel.id;
+
+				channelNews.Add(channelNews2);
+			}
+
+
+			try
+			{
+				for (int i = 0; i < channelNews.Count; i++)
 				{
-					
-					usersSubscribes = new UsersSubscribes();
-					rssChannel = new RSSChannel();
-					XmlNode xmlNode = node.SelectSingleNode("title");
-					rssChannel.NameChannel = xmlNode.InnerText;
-
-					XmlNode xmlNode2 = node.SelectSingleNode("link");
-					rssChannel.Link = xmlNode2.InnerText;
-
-					DateOnly today = DateOnly.FromDateTime(DateTime.Now);
-					rssChannel.DateSubscribe = today;
-					rssChannel.LinkforUpdate = URL;
-					rssChannel.State = 0;
-
-					usersSubscribes.RSSChannel = rssChannel;
-					usersSubscribes.UsersID = UsersID;
+					dbConnect.ChannelNews.Add(channelNews[i]);
 				}
+				dbConnect.SaveChanges();
 
-				xmlNodeList = xDoc.SelectNodes("//channel/item");
-				foreach (XmlNode node in xmlNodeList)
-				{
-					channelNews2 = new ChannelNews();
-					XmlNode xmlNode = node.SelectSingleNode("title");
-					channelNews2.Title = xmlNode.InnerText;
+			}
+			catch (Exception e)
+			{
 
-					XmlNode xmlNode2 = node.SelectSingleNode("link");
-					channelNews2.Link = xmlNode2.InnerText;
-
-					XmlNode xmlNode3 = node.SelectSingleNode("description");
-					channelNews2.Description = xmlNode3.InnerText;
-
-					XmlNode xmlNode4 = node.SelectSingleNode("pubDate");
-					channelNews2.PublDate = xmlNode4.InnerText;
-
-					channelNews2.StatusView = 0;
-					DateOnly today = DateOnly.FromDateTime(DateTime.Now);
-					channelNews2.DateAdd = today;
-					channelNews2.RSSChannel = rssChannel;
-
-					channelNews.Add(channelNews2);
-				}
-
-
-				try
-				{
-					//dbConnect.Database.ExecuteSql($"DELETE from Users");
-
-					dbConnect.RSSChannel.Add(rssChannel);
-					for (int i = 0; i < channelNews.Count; i++)
-					{
-						dbConnect.ChannelNews.Add(channelNews[i]);
-					}
-					dbConnect.RSSChannel.Add(rssChannel);
-					dbConnect.UsersSubscribes.Add(usersSubscribes);
-
-					dbConnect.SaveChanges();
-				}
-				catch (Exception e)
-				{
-
-					Console.WriteLine(e.ToString());
-				}
+				Console.WriteLine(e.ToString());
+			}
 			/*	Regex regex = new Regex(itemsRegex, RegexOptions.Singleline);
 				GroupCollection groups;
 				MatchCollection matches = regex.Matches(XmlCode);
@@ -156,13 +165,9 @@ namespace TESTWebApi
 				*/
 		}
 
-		/// <summary>
-		/// Get all active RSS feeds
-		/// return List<RSSChannel>
-		/// </summary>
-		/// <param name="UserID">User ID</param>
-		/// <returns></returns>
-		public List<RSSChannel> GetAllRSSSubscribes(int UserID) {
+
+		public List<RSSChannel> GetAllRSSSubscribes(int UserID)
+		{
 
 			UsersSubscribes = new List<UsersSubscribes>();
 			rssChannels = new List<RSSChannel>();
@@ -190,91 +195,81 @@ namespace TESTWebApi
 			}
 			return rssRes;
 		}
-		public void parsUpdate()
+
+
+		public async Task parsUpdate(dbConnect dbConnect, CancellationToken CancellationToken)
 		{
-			List<RSSChannel> rssChannelList = new List<RSSChannel>();
-
-			using (var dbConnect = new dbConnect())
+			while (!CancellationToken.IsCancellationRequested)
 			{
-				rssChannelList = dbConnect.RSSChannel.ToList();
-				dbConnect.Database.ExecuteSql($"DELETE from ChannelNews");
-				dbConnect.Database.ExecuteSql($"DELETE from RSSChannel");
-				dbConnect.SaveChanges();
-			}
-			
-			var rssChannelLists = (from m in rssChannelList where m.LinkforUpdate != null select m.LinkforUpdate).ToList();
 
-			if (rssChannelLists.Count==0) { }
-			else
-			{
-				Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-				XmlDocument xDoc = new XmlDocument();
-				for (int i = 0; i < rssChannelLists.Count; i++)
+
+				if (dbConnect != null && dbConnect.ChannelNews.ToList().Count > 0)
 				{
-					channelNews = new List<ChannelNews>();
-					xDoc.Load(rssChannelLists[i]);
-					XmlNodeList xmlNodeList = xDoc.SelectNodes("//channel");
-					foreach (XmlNode node in xmlNodeList)
+
+					List<RSSChannel> rssChannelList = new List<RSSChannel>();
+					List<UsersSubscribes> UsersSubscribes = new List<UsersSubscribes>();
+					rssChannelList = dbConnect.RSSChannel.ToList();
+					UsersSubscribes = dbConnect.UsersSubscribes.ToList();
+					dbConnect.Database.ExecuteSql($"DELETE from ChannelNews");
+
+
+
+
+					var rssChannelLists = (from m in rssChannelList where m.LinkforUpdate != null select m.LinkforUpdate).ToList();
+
+					if (rssChannelLists.Count == 0) { }
+					else
 					{
-						rssChannel = new RSSChannel();
-						XmlNode xmlNode = node.SelectSingleNode("title");
-						rssChannel.NameChannel = xmlNode.InnerText;
-
-						XmlNode xmlNode2 = node.SelectSingleNode("link");
-						rssChannel.Link = xmlNode2.InnerText;
-
-						DateOnly today = DateOnly.FromDateTime(DateTime.Now);
-						rssChannel.DateSubscribe = today;
-						rssChannel.LinkforUpdate = rssChannelLists[i];
-						rssChannel.State = 0;
-
-					}
-
-					
-					xmlNodeList = xDoc.SelectNodes("//channel/item");
-					foreach (XmlNode node in xmlNodeList)
-					{
-						channelNews2 = new ChannelNews();
-						XmlNode xmlNode = node.SelectSingleNode("title");
-						channelNews2.Title = xmlNode.InnerText;
-
-						XmlNode xmlNode2 = node.SelectSingleNode("link");
-						channelNews2.Link = xmlNode2.InnerText;
-
-						XmlNode xmlNode3 = node.SelectSingleNode("description");
-						channelNews2.Description = xmlNode3.InnerText;
-
-						XmlNode xmlNode4 = node.SelectSingleNode("pubDate");
-						channelNews2.PublDate = xmlNode4.InnerText;
-
-						channelNews2.StatusView = 0;
-						DateOnly today = DateOnly.FromDateTime(DateTime.Now);
-						channelNews2.DateAdd = today;
-						channelNews2.RSSChannel = rssChannel;
-
-						channelNews.Add(channelNews2);
-					}
-
-					using (var dbConnect = new dbConnect())
-					{
-						for (int j = 0; j < channelNews.Count; j++)
+						Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+						XmlDocument xDoc = new XmlDocument();
+						for (int i = 0; i < rssChannelLists.Count; i++)
 						{
-							dbConnect.ChannelNews.Add(channelNews[j]);
+							channelNews = new List<ChannelNews>();
+							xDoc.Load(rssChannelLists[i]);
+							XmlNodeList xmlNodeList;
+
+							xmlNodeList = xDoc.SelectNodes("//channel/item");
+							foreach (XmlNode node in xmlNodeList)
+							{
+								channelNews2 = new ChannelNews();
+								XmlNode xmlNode = node.SelectSingleNode("title");
+								channelNews2.Title = xmlNode.InnerText;
+
+								XmlNode xmlNode2 = node.SelectSingleNode("link");
+								channelNews2.Link = xmlNode2.InnerText;
+
+								XmlNode xmlNode3 = node.SelectSingleNode("description");
+								channelNews2.Description = xmlNode3.InnerText;
+
+								XmlNode xmlNode4 = node.SelectSingleNode("pubDate");
+								channelNews2.PublDate = xmlNode4.InnerText;
+
+								channelNews2.StatusView = 0;
+								DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+								channelNews2.DateAdd = today;
+								channelNews2.RSSChannelID = rssChannelList[i].id;
+
+								channelNews.Add(channelNews2);
+							}
+
+							for (int j = 0; j < channelNews.Count; j++)
+							{
+								dbConnect.ChannelNews.Add(channelNews[j]);
+							}
+
+							dbConnect.SaveChanges();
 						}
-						dbConnect.SaveChanges();
+
 					}
-					
 				}
 
+				await Task.Delay(25000);
 			}
 		}
-		/// <summary>
-		/// Get all unread news from some date (parameters: date
-		/// </summary>
-		/// <param name="dateTime">DateTime</param>
-		/// <param name="UserID">User ID</param>
-		/// <returns></returns>
-		public List<ChannelNews> GetAllUnreadNewsByDate(DateTime dateTime, int UserID) {
+
+
+		public List<ChannelNews> GetAllUnreadNewsByDate(DateTime dateTime, int UserID)
+		{
 			rssChannels = new List<RSSChannel>();
 			rssChannels = GetAllRSSSubscribes(UserID);//user rssChannels
 			List<int> ids = new List<int>();
@@ -282,28 +277,28 @@ namespace TESTWebApi
 			{
 				ids.Add(item.id);
 			}
-			channelNews = dbConnect.ChannelNews.ToList();	
+			channelNews = dbConnect.ChannelNews.ToList();
 			DateOnly NormalDate = DateOnly.FromDateTime(dateTime);
+
 			List<ChannelNews> rssRes = new List<ChannelNews>();
 			for (int i = 0; i < ids.Count; i++)
 			{
 				for (int j = 0; j < channelNews.Count; j++)
 				{
-					if (channelNews[j].RSSChannel.id == ids[i])
+					if (channelNews[j].RSSChannelID == ids[i])
 					{
 						rssRes.Add(channelNews[j]);
 					}
 				}
 			}
-			rssRes = (from a in rssRes where a.StatusView == 0 select a).ToList();
+			rssRes = (from a in rssRes where a.StatusView == 0 && a.DateAdd == NormalDate select a).ToList();
 			return rssRes;
 		}
 
-		/// <summary>
-		/// Set news as read
-		/// </summary>
-		/// <param name="ID">NewsID</param>
-		public void SetAsRead(int ID) {
+
+
+		public void SetAsRead(int ID)
+		{
 
 			try
 			{
@@ -311,9 +306,9 @@ namespace TESTWebApi
 				dbConnect.Database.ExecuteSqlRaw(sqlQ);
 				dbConnect.SaveChanges();
 			}
-			catch(Exception ex) 
+			catch (Exception ex)
 			{
-			Console.WriteLine(ex.ToString());
+				Console.WriteLine(ex.ToString());
 			}
 		}
 	}
