@@ -8,7 +8,7 @@ using System;
 
 namespace TESTWebApi
 {
-	public class ParsPage : IParsPage
+	public class ParsPage 
 	{
 
 		/*string itemsRegex = @"<item>(.*)</item>";
@@ -24,16 +24,15 @@ namespace TESTWebApi
 		UsersSubscribes usersSubscribes;
 		List<UsersSubscribes> UsersSubscribes;
 
+		int DELAY_FOR_UPDATA = 25000;
 
 		private readonly dbConnect dbConnect;
-
 
 		public ParsPage() { }
 		public ParsPage(dbConnect dbConnect1)
 		{
 			dbConnect = dbConnect1;
 		}
-
 
 		public void parsPage(string URL, int UsersID)
 		{
@@ -165,7 +164,6 @@ namespace TESTWebApi
 				*/
 		}
 
-
 		public List<RSSChannel> GetAllRSSSubscribes(int UserID)
 		{
 
@@ -196,13 +194,10 @@ namespace TESTWebApi
 			return rssRes;
 		}
 
-
 		public async Task parsUpdate(dbConnect dbConnect, CancellationToken CancellationToken)
 		{
 			while (!CancellationToken.IsCancellationRequested)
 			{
-
-
 				if (dbConnect != null && dbConnect.ChannelNews.ToList().Count > 0)
 				{
 
@@ -262,11 +257,9 @@ namespace TESTWebApi
 
 					}
 				}
-
-				await Task.Delay(25000);
+				await Task.Delay(DELAY_FOR_UPDATA);
 			}
 		}
-
 
 		public List<ChannelNews> GetAllUnreadNewsByDate(DateTime dateTime, int UserID)
 		{
@@ -294,8 +287,6 @@ namespace TESTWebApi
 			rssRes = (from a in rssRes where a.StatusView == 0 && a.DateAdd == NormalDate select a).ToList();
 			return rssRes;
 		}
-
-
 
 		public void SetAsRead(int ID)
 		{

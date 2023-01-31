@@ -21,8 +21,6 @@ namespace TESTWebApi.Models
 		public string PublDate { get; set; }
 		[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy}")]
 		public DateOnly DateAdd { get; set; }
-
-
 		public int RSSChannelID { get; set; }
 	}
 }

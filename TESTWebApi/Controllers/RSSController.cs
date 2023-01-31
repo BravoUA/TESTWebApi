@@ -13,7 +13,7 @@ namespace TESTWebApi.Controllers
 	{
 
 
-		public  dbConnect dbConnect;
+		private readonly dbConnect dbConnect;
 		private readonly dbConUsers dbConUsers;
 		public List<RSSChannel> rssChannels = new List<RSSChannel>();
 		public List<UsersSubscribes> usersSubscribes = new List<UsersSubscribes>();
