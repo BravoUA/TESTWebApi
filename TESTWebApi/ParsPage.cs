@@ -24,7 +24,7 @@ namespace TESTWebApi
 		UsersSubscribes usersSubscribes;
 		List<UsersSubscribes> UsersSubscribes;
 
-		int DELAY_FOR_UPDATA = 25000;
+		int DELAY_FOR_UPDATA = 60000;
 
 		private readonly dbConnect dbConnect;
 
