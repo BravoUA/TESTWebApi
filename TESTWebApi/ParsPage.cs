@@ -116,52 +116,7 @@ namespace TESTWebApi
 
 				Console.WriteLine(e.ToString());
 			}
-			/*	Regex regex = new Regex(itemsRegex, RegexOptions.Singleline);
-				GroupCollection groups;
-				MatchCollection matches = regex.Matches(XmlCode);
-				MatchCollection matches2;
-				if (matches.Count > 0)
-				{
-					foreach (Match match in matches)
-					{ 				
-						regex = new Regex(titelRegex, RegexOptions.Singleline);
-						matches2 = regex.Matches(match.ToString());
-						foreach (Match match2 in matches2)
-						{
-							groups = match2.Groups;
-							channelNews2.Title = groups[1].ToString();
-						}
-						regex = new Regex(LinkRegex, RegexOptions.Singleline);
-						matches2 = regex.Matches(match.ToString());
-						foreach (Match match2 in matches2)
-						{
-							groups = match2.Groups;
-							channelNews2.Link = groups[1].ToString();
-						}
-						regex = new Regex(DescriptionRegex, RegexOptions.Singleline);
-						matches2 = regex.Matches(match.ToString());
-						foreach (Match match2 in matches2)
-						{
-							groups = match2.Groups;
-							channelNews2.Description = groups[1].ToString();
-						}
-						regex = new Regex(PublDateRegex, RegexOptions.Singleline);
-						matches2 = regex.Matches(match.ToString());
-						foreach (Match match2 in matches2)
-						{
-							groups = match2.Groups;
-							channelNews2.PublDate = groups[1].ToString();
-						}
-
-						channelNews.Add(channelNews2);
-					}
-				}
-				else
-				{
-					Console.WriteLine("No matches found");
-				}
-
-				*/
+			
 		}
 
 		public List<RSSChannel> GetAllRSSSubscribes(int UserID)
@@ -284,7 +239,7 @@ namespace TESTWebApi
 					}
 				}
 			}
-			rssRes = (from a in rssRes where a.StatusView == 0 && a.DateAdd == NormalDate select a).ToList();
+			rssRes = (from a in rssRes where a.StatusView == 0 && a.DateAdd >= NormalDate select a).ToList();
 			return rssRes;
 		}
 
@@ -293,8 +248,24 @@ namespace TESTWebApi
 
 			try
 			{
-				string sqlQ = "UPDATE ChannelNews SET StatusView = 1 WHERE id == " + ID;
-				dbConnect.Database.ExecuteSqlRaw(sqlQ);
+			
+
+				channelNews = new List<ChannelNews>();
+
+				channelNews = dbConnect.ChannelNews.ToList();
+
+				ChannelNews  ChannelNewsEdit = new ChannelNews();
+				int Index =0;
+				for (int i = 0; i < channelNews.Count; i++)
+				{
+					if (ID== channelNews[i].id)
+					{
+						ChannelNewsEdit = channelNews[i];
+						Index = i;
+					}
+				}
+				ChannelNewsEdit.StatusView = 1;
+				channelNews.Insert(Index, ChannelNewsEdit);
 				dbConnect.SaveChanges();
 			}
 			catch (Exception ex)
