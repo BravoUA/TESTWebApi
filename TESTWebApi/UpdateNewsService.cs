@@ -28,7 +28,7 @@ public class UpdateNewsService : BackgroundService
 			
 			using (var scope = _IServiceProvider.CreateScope())
 			{
-				ParsPage = new ParsPage();
+				ParsPage = new ParsPage(dbConnect);
 				dbConnect = scope.ServiceProvider.GetRequiredService<dbConnect>();
 				await ParsPage.parsUpdate(dbConnect, stoppingToken);
 				

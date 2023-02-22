@@ -6,7 +6,7 @@ using TESTWebApi.Models;
 
 namespace TESTWebApi.Controllers
 {
-	[ApiController]
+    [ApiController]
 	[Route("[controller]")]
 	[Authorize]
 	public class RSSController : Controller
@@ -31,6 +31,7 @@ namespace TESTWebApi.Controllers
 		{
 			string userEmail = HttpContext.User.Identity.Name;
 			Users users = await dbConUsers.Users.Where(users => users.UserEmail == userEmail).FirstOrDefaultAsync();
+
 			Pars = new ParsPage(dbConnect);
 			Pars.parsPage(Url, users.Id);
 			return Ok();
@@ -39,10 +40,10 @@ namespace TESTWebApi.Controllers
 		[HttpGet("GetAllRSS")]
 		public async Task<IActionResult> GET()
 		{
-				string userEmail = HttpContext.User.Identity.Name;
-				Users Users = await dbConUsers.Users.Where(users => users.UserEmail == userEmail).FirstOrDefaultAsync();
-				Pars = new ParsPage(dbConnect);
-				return Ok(Pars.GetAllRSSSubscribes(Users.Id));
+			string userEmail = HttpContext.User.Identity.Name;
+			Users Users = await dbConUsers.Users.Where(users => users.UserEmail == userEmail).FirstOrDefaultAsync();
+			ReturnData ReturnData = new ReturnData(dbConnect);
+			return Ok(ReturnData.GetAllRSSSubscribes(Users.Id));
 		}
 
 		[HttpGet("GetAllUnreadNewsByDate")]
@@ -50,16 +51,15 @@ namespace TESTWebApi.Controllers
 		{
 			string userEmail = HttpContext.User.Identity.Name;
 			Users users = await dbConUsers.Users.Where(users => users.UserEmail == userEmail).FirstOrDefaultAsync();
-			Pars = new ParsPage(dbConnect);
-			return Ok(Pars.GetAllUnreadNewsByDate(dateTime, users.Id));
+			ReturnData ReturnData = new ReturnData(dbConnect);
+			return Ok(ReturnData.GetAllUnreadNewsByDate(dateTime, users.Id));
 		}
-
 
 		[HttpPut("SetNewsAsRead")]
 		public IActionResult PUT(int ID)
 		{
-			Pars = new ParsPage(dbConnect);
-			Pars.SetAsRead(ID);
+			InsertData insertData = new InsertData(dbConnect);
+			insertData.SetAsRead(ID);
 			return Ok();
 		}
 
